@@ -58,11 +58,11 @@ class HashTable:
         '''
         index = self._hash_mod(key)
         head = self.storage[index]
-        if head is None:
+        if head is None or head.key == key:
           head = LinkedPair(key, value)
         else:
           temp = head
-          while temp.next is not None:
+          while temp.next is not None and temp.next.key != key:
             temp = temp.next
           temp.next = LinkedPair(key, value)
         self.storage[index] = head
