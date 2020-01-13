@@ -100,18 +100,22 @@ class HashTable:
 
         Fill this in.
         '''
-        index = self._hash_mod(key)
-        head = self.storage[index]
-        if head is None:
-          return None
-        elif head.key == key:
-          return head.value
-        else:
-          while head.next is not None:
-            head = head.next
-            if key == head.key:
-              return head.value
-          return None
+        value = None
+        for i in range(0, self.capacity):
+        #   if key == self.storage[i]:
+        #     return 'true'
+        # index = self._hash_mod(key)
+          head = self.storage[i]
+          if head is None:
+            pass
+          elif head.key == key:
+            value = head.value
+          else:
+            while head.next is not None:
+              head = head.next
+              if key == head.key:
+                value = head.value
+        return value
 
     def resize(self):
         '''
@@ -120,7 +124,11 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        newHash = HashTable(self.capacity * 2)
+        for i in range(0,self.capacity):
+          newHash.storage[i] = self.storage[i]
+        self.storage = newHash.storage
+        self.capacity = newHash.capacity
 
 
 
