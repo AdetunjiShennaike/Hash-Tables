@@ -1,3 +1,5 @@
+import warnings
+
 # '''
 # Linked List hash table key/value pair
 # '''
@@ -6,6 +8,9 @@ class LinkedPair:
         self.key = key
         self.value = value
         self.next = None
+    
+    def __repr__(self):
+        return f"{self.key} + {self.value} next:{self.next}"
 
 class HashTable:
     '''
@@ -51,9 +56,17 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
-
-
+        index = self._hash_mod(key)
+        head = self.storage[index]
+        if head is None:
+          head = LinkedPair(key, value)
+        else:
+          temp = head
+          while temp.next is not None:
+            temp = temp.next
+          temp.next = LinkedPair(key, value)
+        self.storage[index] = head
+         
 
     def remove(self, key):
         '''
@@ -63,7 +76,20 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        index = self._hash_mod(key)
+        head = self.storage[index]
+        if head is None:
+          warnings.warn('The key is not here!')
+        elif head.key == key:
+          head = None
+        else:
+          temp = head
+          while temp.next is not None:
+            if key == temp.next.key:
+              temp.next = temp.next.next
+            else:
+              temp = temp.next
+        self.storage[index] = head
 
 
     def retrieve(self, key):
@@ -74,8 +100,18 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
-
+        index = self._hash_mod(key)
+        head = self.storage[index]
+        if head is None:
+          return None
+        elif head.key == key:
+          return head.value
+        else:
+          while head.next is not None:
+            head = head.next
+            if key == head.key:
+              return head.value
+          return None
 
     def resize(self):
         '''
