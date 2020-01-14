@@ -20,6 +20,7 @@ class HashTable:
     def __init__(self, capacity):
         self.capacity = capacity  # Number of buckets in the hash table
         self.storage = [None] * capacity
+        self.original = True
 
 
     def _hash(self, key):
@@ -37,15 +38,29 @@ class HashTable:
 
         OPTIONAL STRETCH: Research and implement DJB2
         '''
-        pass
+        # DBJ2 hash in C
+        # unsigned long
+        # hash(unsigned char *str)
+        # {
+        #     unsigned long hash = 5381;
+        #     int c;
 
+        #     while (c = *str++)
+        #         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+
+        #     return hash;
+        # }
+        hash = 5381
+        for x in key:
+            hash = (( hash << 5) + hash) + ord(x) & 0xFFFFFFFF
+        return hash
 
     def _hash_mod(self, key):
         '''
         Take an arbitrary key and return a valid integer index
         within the storage capacity of the hash table.
         '''
-        return self._hash(key) % self.capacity
+        return self._hash_djb2(key) % self.capacity
 
 
     def insert(self, key, value):
@@ -58,15 +73,16 @@ class HashTable:
         '''
         index = self._hash_mod(key)
         head = self.storage[index]
-        if head is None:
+        if head is None or head.key == key:
           head = LinkedPair(key, value)
         else:
           temp = head
-          while temp.next is not None:
+          while temp.next is not None and temp.next.key != key:
             temp = temp.next
           temp.next = LinkedPair(key, value)
         self.storage[index] = head
-         
+        self.check()
+        
 
     def remove(self, key):
         '''
@@ -90,6 +106,7 @@ class HashTable:
             else:
               temp = temp.next
         self.storage[index] = head
+        self.check()
 
 
     def retrieve(self, key):
@@ -100,22 +117,20 @@ class HashTable:
 
         Fill this in.
         '''
-        value = None
-        for i in range(0, self.capacity):
-        #   if key == self.storage[i]:
-        #     return 'true'
-        # index = self._hash_mod(key)
-          head = self.storage[i]
-          if head is None:
-            pass
-          elif head.key == key:
-            value = head.value
-          else:
-            while head.next is not None:
-              head = head.next
-              if key == head.key:
-                value = head.value
-        return value
+        # value = None
+        # for i in range(0, self.capacity):
+        index = self._hash_mod(key)
+        head = self.storage[index]
+        if head is None:
+          return None
+        elif head.key == key:
+          return head.value
+        else:
+          while head.next is not None:
+            head = head.next
+            if key == head.key:
+              return head.value
+        return None
 
     def resize(self):
         '''
@@ -125,12 +140,45 @@ class HashTable:
         Fill this in.
         '''
         newHash = HashTable(self.capacity * 2)
-        for i in range(0,self.capacity):
-          newHash.storage[i] = self.storage[i]
+        for i in range(0,len(self.storage)):
+          if self.storage[i] is not None:
+            newHash.insert(self.storage[i].key, self.storage[i].value)
+            while self.storage[i].next is not None:
+              self.storage[i] = self.storage[i].next
+              newHash.insert(self.storage[i].key, self.storage[i].value)
+        self.storage = newHash.storage
+        self.capacity = newHash.capacity
+        self.original = False
+
+
+    def shrink(self):
+        '''
+        Halves the capacity of the hash table and
+        rehash all key/value pairs.
+        '''
+        newHash = HashTable(int(len(self.storage)/2))
+        for i in range(0,len(self.storage)):
+          if self.storage[i] is not None:
+            newHash.insert(self.storage[i].key, self.storage[i].value)
+            while self.storage[i].next is not None:
+              self.storage[i] = self.storage[i].next
+              newHash.insert(self.storage[i].key, self.storage[i].value)
         self.storage = newHash.storage
         self.capacity = newHash.capacity
 
 
+    def check(self):
+      '''
+      Check if the hash should shrink or resize
+      '''
+      count = 0 
+      for i in range(0, len(self.storage)):
+        if self.storage[i] is not None:
+          count += 1
+      if count >= (len(self.storage)*.7):
+          self.resize()
+      if count <= (len(self.storage)*.2) and count >= 3 and self.original is False:
+          self.shrink()
 
 if __name__ == "__main__":
     ht = HashTable(2)
