@@ -80,7 +80,7 @@ class HashTable:
             temp = temp.next
           temp.next = LinkedPair(key, value)
         self.storage[index] = head
-        # self.check()
+        self.check()
         
 
     def remove(self, key):
@@ -105,7 +105,7 @@ class HashTable:
             else:
               temp = temp.next
         self.storage[index] = head
-        # self.check()
+        self.check()
 
 
     def retrieve(self, key):
@@ -116,20 +116,20 @@ class HashTable:
 
         Fill this in.
         '''
-        value = None
-        for i in range(0, self.capacity):
-        # index = self._hash_mod(key)
-          head = self.storage[i]
-          if head is None:
-            pass
-          elif head.key == key:
-            value = head.value
-          else:
-            while head.next is not None:
-              head = head.next
-              if key == head.key:
-                value = head.value
-        return value
+        # value = None
+        # for i in range(0, self.capacity):
+        index = self._hash_mod(key)
+        head = self.storage[index]
+        if head is None:
+          return None
+        elif head.key == key:
+          return head.value
+        else:
+          while head.next is not None:
+            head = head.next
+            if key == head.key:
+              return head.value
+        return None
 
     def resize(self):
         '''
@@ -139,8 +139,12 @@ class HashTable:
         Fill this in.
         '''
         newHash = HashTable(self.capacity * 2)
-        for i in range(0,self.capacity):
-          newHash.storage[i] = self.storage[i]
+        for i in range(0,len(self.storage)):
+          if self.storage[i] is not None:
+            newHash.insert(self.storage[i].key, self.storage[i].value)
+            while self.storage[i].next is not None:
+              self.storage[i] = self.storage[i].next
+              newHash.insert(self.storage[i].key, self.storage[i].value)
         self.storage = newHash.storage
         self.capacity = newHash.capacity
 
@@ -150,9 +154,10 @@ class HashTable:
         Halves the capacity of the hash table and
         rehash all key/value pairs.
         '''
-        if self.capacity % 2 != 0:
-          self.capacity += 1
-        newHash = HashTable(int(self.capacity/2))
+        if len(self.storage) % 2 != 0:
+          newHash = HashTable((int(len(self.storage)+ 1)/2))
+        else:
+          newHash = HashTable(int(len(self.storage)/2))
         for i in range(0,newHash.capacity):
           newHash.storage[i] = self.storage[i]
         self.storage = newHash.storage
@@ -164,12 +169,12 @@ class HashTable:
       Check if the hash should shrink or resize
       '''
       count = 0 
-      for i in range(0, self.capacity):
+      for i in range(0, len(self.storage)):
         if self.storage[i] is not None:
           count += 1
-      if count > (self.capacity*.7):
-          self.resize() 
-      elif count < (self.capacity*.2):
+      if count > (len(self.storage)*.7):
+          self.resize()
+      elif count < (len(self.storage)*.2 and self.capacity != len(self.storage)):
           self.shrink()
 
 if __name__ == "__main__":
