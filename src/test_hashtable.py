@@ -199,14 +199,13 @@ class TestHashTable(unittest.TestCase):
         ht.remove("key-5")
         ht.remove("key-6")
         ht.remove("key-7")
+        ht.remove("key-1")
 
-        print(len(ht.storage), ht.capacity)
+        # ht.shrink()
         self.assertTrue(len(ht.storage) == 8)
 
         return_value = ht.retrieve("key-0")
         self.assertTrue(return_value == "val-0")
-        return_value = ht.retrieve("key-1")
-        self.assertTrue(return_value == "val-1")
 
 
 if __name__ == '__main__':

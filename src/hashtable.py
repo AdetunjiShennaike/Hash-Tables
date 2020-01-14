@@ -20,6 +20,7 @@ class HashTable:
     def __init__(self, capacity):
         self.capacity = capacity  # Number of buckets in the hash table
         self.storage = [None] * capacity
+        self.original = True
 
 
     def _hash(self, key):
@@ -147,6 +148,7 @@ class HashTable:
               newHash.insert(self.storage[i].key, self.storage[i].value)
         self.storage = newHash.storage
         self.capacity = newHash.capacity
+        self.original = False
 
 
     def shrink(self):
@@ -154,12 +156,13 @@ class HashTable:
         Halves the capacity of the hash table and
         rehash all key/value pairs.
         '''
-        if len(self.storage) % 2 != 0:
-          newHash = HashTable((int(len(self.storage)+ 1)/2))
-        else:
-          newHash = HashTable(int(len(self.storage)/2))
-        for i in range(0,newHash.capacity):
-          newHash.storage[i] = self.storage[i]
+        newHash = HashTable(int(len(self.storage)/2))
+        for i in range(0,len(self.storage)):
+          if self.storage[i] is not None:
+            newHash.insert(self.storage[i].key, self.storage[i].value)
+            while self.storage[i].next is not None:
+              self.storage[i] = self.storage[i].next
+              newHash.insert(self.storage[i].key, self.storage[i].value)
         self.storage = newHash.storage
         self.capacity = newHash.capacity
 
@@ -172,9 +175,9 @@ class HashTable:
       for i in range(0, len(self.storage)):
         if self.storage[i] is not None:
           count += 1
-      if count > (len(self.storage)*.7):
+      if count >= (len(self.storage)*.7):
           self.resize()
-      elif count < (len(self.storage)*.2 and self.capacity != len(self.storage)):
+      if count <= (len(self.storage)*.2) and count >= 3 and self.original is False:
           self.shrink()
 
 if __name__ == "__main__":
